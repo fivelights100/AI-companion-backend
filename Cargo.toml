@@ -1,0 +1,22 @@
+[package]
+name = "ai-companion-backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# 비동기 런타임 및 웹 프레임워크
+tokio = { version = "1", features = ["full"] }
+axum = "0.7"
+
+# JSON 직렬화/역직렬화
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# 데이터베이스 연동 (PostgreSQL 기준)
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "chrono", "tls-rustls"] }
+
+# 환경변수 로드
+dotenvy = "0.15"
+chrono = { version = "0.4.45", features = ["serde"] }
+reqwest = { version = "0.13.4", features = ["json"] }
+tower-http = { version = "0.7.0", features = ["cors", "fs"] }
