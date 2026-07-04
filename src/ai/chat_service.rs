@@ -27,7 +27,7 @@ pub async fn handle_chat(state: &AppState, payload: ChatRequest) -> ChatResponse
     let mut messages = build_messages(&payload, &intent);
 
     let first_request = match intent {
-        Intent::Schedule => chat_request_body_with_tools(messages.clone(), get_tools()),
+        Intent::Schedule | Intent::Ledger => chat_request_body_with_tools(messages.clone(), get_tools()),
         Intent::Chat => chat_request_body(messages.clone()),
     };
 
@@ -63,6 +63,7 @@ pub async fn handle_chat(state: &AppState, payload: ChatRequest) -> ChatResponse
             reply: reply.to_string(),
             audio_base64,
             schedule_updated: tool_summary.schedule_changed,
+            ledger_updated: tool_summary.ledger_changed,
         };
     }
 
@@ -73,6 +74,7 @@ pub async fn handle_chat(state: &AppState, payload: ChatRequest) -> ChatResponse
             reply: reply.to_string(),
             audio_base64,
             schedule_updated: false,
+            ledger_updated: false,
         };
     }
 

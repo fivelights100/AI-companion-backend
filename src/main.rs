@@ -20,6 +20,10 @@ async fn main() {
         .await
         .expect("데이터베이스 연결에 실패했습니다.");
 
+    db::initialize_schema(&pool)
+        .await
+        .expect("데이터베이스 스키마 초기화에 실패했습니다.");
+
     let app = routes::router(AppState { db: pool });
     let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
 

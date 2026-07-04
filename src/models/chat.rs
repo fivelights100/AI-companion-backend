@@ -17,6 +17,7 @@ pub struct ChatResponse {
     pub reply: String,
     pub audio_base64: String,
     pub schedule_updated: bool,
+    pub ledger_updated: bool,
 }
 
 impl ChatResponse {
@@ -25,6 +26,7 @@ impl ChatResponse {
             reply: reply.to_string(),
             audio_base64: String::new(),
             schedule_updated: false,
+            ledger_updated: false,
         }
     }
 }
