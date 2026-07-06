@@ -8,8 +8,11 @@ use std::{
 
 use tokio::{process::Command, time::{sleep, timeout}};
 
-use crate::models::files::{
-    FileSearchKind, FileSearchRequest, FileSearchResponse, FileSearchResult, FileSearchStatus,
+use crate::{
+    files::security,
+    models::files::{
+        FileSearchKind, FileSearchRequest, FileSearchResponse, FileSearchResult, FileSearchStatus,
+    },
 };
 
 const DEFAULT_MAX_RESULTS: u8 = 20;
@@ -180,51 +183,9 @@ pub async fn search_files(request: FileSearchRequest) -> FileSearchResponse {
 }
 
 fn validate_request(request: &FileSearchRequest) -> Option<String> {
-    let query = request.query.trim();
-
-    if query.is_empty() {
-        return Some("검색어가 비어 있습니다.".to_string());
-    }
-
-    if query.chars().count() > 128 {
-        return Some("검색어는 128자 이하만 허용됩니다.".to_string());
-    }
-
-    if contains_control_chars(query) {
-        return Some("검색어에 허용되지 않는 제어 문자가 포함되어 있습니다.".to_string());
-    }
-
-    if let Some(extension) = request.extension.as_deref() {
-        let extension = extension.trim().trim_start_matches('.');
-        let valid = !extension.is_empty()
-            && extension.len() <= 16
-            && extension
-                .chars()
-                .all(|character| character.is_ascii_alphanumeric());
-
-        if !valid {
-            return Some("확장자는 영문/숫자 16자 이하만 허용됩니다.".to_string());
-        }
-    }
-
-    if let Some(root_path) = request.root_path.as_deref() {
-        let root_path = root_path.trim();
-
-        if root_path.is_empty() {
-            return Some("검색 범위 폴더가 비어 있습니다.".to_string());
-        }
-
-        if contains_control_chars(root_path) {
-            return Some("검색 범위 폴더에 허용되지 않는 제어 문자가 포함되어 있습니다.".to_string());
-        }
-
-        let path = Path::new(root_path);
-        if !path.exists() || !path.is_dir() {
-            return Some("검색 범위 폴더가 존재하지 않거나 폴더가 아닙니다.".to_string());
-        }
-    }
-
-    None
+    security::validate_query(&request.query, "검색어가 비어 있습니다.")
+        .or_else(|| security::validate_search_extension(request.extension.as_deref()))
+        .or_else(|| security::validate_root_path(request.root_path.as_deref()))
 }
 
 fn build_allowed_args(request: &FileSearchRequest, max_results: u8, export_path: Option<&Path>) -> Vec<String> {
@@ -261,7 +222,7 @@ fn build_allowed_args(request: &FileSearchRequest, max_results: u8, export_path:
     let mut search_terms = split_safe_search_terms(request.query.trim());
 
     if let Some(extension) = request.extension.as_deref() {
-        let extension = extension.trim().trim_start_matches('.');
+        let extension = security::normalize_extension(extension);
         if !extension.is_empty() {
             search_terms.push(format!("ext:{extension}"));
         }
@@ -304,9 +265,6 @@ fn parse_result_line(line: &str) -> Option<FileSearchResult> {
     })
 }
 
-fn contains_control_chars(value: &str) -> bool {
-    value.chars().any(|character| character.is_control())
-}
 
 fn find_everything_cli() -> Option<PathBuf> {
     if let Ok(path) = env::var("EVERYTHING_ES_PATH") {

@@ -9,6 +9,7 @@ use crate::{
         intent::{detect_intent, Intent},
         prompt::PromptManager,
         schedule_tools::run_ai_tool_calls,
+        speech_sanitizer::build_tts_text,
         tools::get_tools,
         tts::text_to_speech,
     },
@@ -150,63 +151,6 @@ fn build_file_open_candidates_reply(page: &FileOpenCandidatePage) -> String {
     } else {
         "화면에 후보를 띄웠어. 원하는 항목을 선택해서 열어줘.".to_string()
     }
-}
-
-fn build_tts_text(reply: &str, intent: &Intent) -> String {
-    match intent {
-        Intent::FileSearch => {
-            if looks_like_file_or_path_heavy_reply(reply) {
-                "검색 결과를 화면에 정리해뒀어. 필요한 항목이 있으면 다시 말해줘.".to_string()
-            } else {
-                remove_path_like_lines(reply)
-            }
-        }
-        Intent::FileOpen => {
-            if looks_like_file_or_path_heavy_reply(reply) {
-                "파일이나 폴더 열기 요청을 확인했어. 화면의 안내를 보고 필요한 대상을 더 구체적으로 말해줘.".to_string()
-            } else {
-                remove_path_like_lines(reply)
-            }
-        }
-        _ => reply.to_string(),
-    }
-}
-
-fn looks_like_file_or_path_heavy_reply(reply: &str) -> bool {
-    let lower = reply.to_ascii_lowercase();
-    let path_markers = [":\\", ":/", "\\", "경로:", "위치:", "c:", "d:", "e:"];
-    let extension_markers = [
-        ".pdf", ".txt", ".md", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-        ".png", ".jpg", ".jpeg", ".gif", ".mp3", ".mp4", ".zip", ".js", ".ts",
-        ".rs", ".py", ".json", ".yaml", ".html", ".css",
-    ];
-
-    let path_hits = path_markers.iter().filter(|marker| lower.contains(*marker)).count();
-    let extension_hits = extension_markers.iter().filter(|marker| lower.contains(*marker)).count();
-
-    path_hits > 0 || extension_hits >= 2 || reply.lines().count() >= 4 && extension_hits > 0
-}
-
-fn remove_path_like_lines(reply: &str) -> String {
-    let cleaned = reply
-        .lines()
-        .filter(|line| !looks_like_path_line(line))
-        .collect::<Vec<_>>()
-        .join("\n");
-
-    if cleaned.trim().is_empty() {
-        "화면에 결과를 정리해뒀어.".to_string()
-    } else {
-        cleaned
-    }
-}
-
-fn looks_like_path_line(line: &str) -> bool {
-    let lower = line.to_ascii_lowercase();
-    lower.contains(":\\")
-        || lower.contains(":/")
-        || lower.contains("경로:")
-        || lower.contains("위치:")
 }
 
 async fn create_tts(client: &reqwest::Client, text: &str) -> String {

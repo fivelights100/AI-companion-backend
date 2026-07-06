@@ -4,6 +4,7 @@ pub mod file_search_tools;
 pub mod intent;
 pub mod prompt;
 pub mod schedule_tools;
+pub mod speech_sanitizer;
 pub mod tools;
 pub mod tts;
 pub mod stt;
