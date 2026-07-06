@@ -1,12 +1,13 @@
 mod ai;
 mod config;
 mod db;
+mod files;
 mod models;
 mod routes;
 mod state;
 
 use sqlx::postgres::PgPoolOptions;
-use std::net::SocketAddr;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use state::AppState;
 
 #[tokio::main]
@@ -25,9 +26,13 @@ async fn main() {
         .expect("데이터베이스 스키마 초기화에 실패했습니다.");
 
     let app = routes::router(AppState { db: pool });
-    let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
+    let bind_host = config
+        .bind_host
+        .parse::<IpAddr>()
+        .unwrap_or(IpAddr::V4(Ipv4Addr::LOCALHOST));
+    let addr = SocketAddr::from((bind_host, config.port));
 
-    println!("🚀 서버가 포트 {}에서 실행 중입니다...", config.port);
+    println!("🚀 서버가 {}:{}에서 실행 중입니다...", config.bind_host, config.port);
 
     let listener = tokio::net::TcpListener::bind(addr)
         .await

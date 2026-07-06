@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::models::files::{FileOpenCandidate, FileOpenCandidatePage};
+
 #[derive(Debug, Deserialize)]
 pub struct ChatMessage {
     pub role: String,
@@ -18,6 +20,10 @@ pub struct ChatResponse {
     pub audio_base64: String,
     pub schedule_updated: bool,
     pub ledger_updated: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pending_file_open: Option<FileOpenCandidate>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pending_file_open_candidates: Option<FileOpenCandidatePage>,
 }
 
 impl ChatResponse {
@@ -27,6 +33,8 @@ impl ChatResponse {
             audio_base64: String::new(),
             schedule_updated: false,
             ledger_updated: false,
+            pending_file_open: None,
+            pending_file_open_candidates: None,
         }
     }
 }

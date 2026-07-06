@@ -1,5 +1,4 @@
 use axum::{extract::State, Json};
-use chrono::Utc;
 use std::path::Path;
 
 use crate::state::AppState;
@@ -23,7 +22,6 @@ pub async fn api_status(State(state): State<AppState>) -> Json<serde_json::Value
 
     Json(serde_json::json!({
         "status": "ok",
-        "server_time": Utc::now().to_rfc3339(),
         "database": database,
         "services": {
             "openai_api_key": has_env("OPENAI_API_KEY"),

@@ -1,8 +1,10 @@
 pub mod chat_service;
 pub mod client;
+pub mod file_search_tools;
 pub mod intent;
 pub mod prompt;
 pub mod schedule_tools;
 pub mod tools;
 pub mod tts;
 pub mod stt;
+pub mod file_open_tools;

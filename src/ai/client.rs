@@ -67,6 +67,19 @@ pub fn chat_request_body_with_tools(messages: Vec<Value>, tools: Value) -> Value
     })
 }
 
+
+pub fn chat_request_body_with_forced_tool(messages: Vec<Value>, tools: Value, tool_name: &str) -> Value {
+    json!({
+        "model": DEFAULT_CHAT_MODEL,
+        "messages": messages,
+        "tools": tools,
+        "tool_choice": {
+            "type": "function",
+            "function": { "name": tool_name }
+        },
+    })
+}
+
 pub fn extract_assistant_message(response: &Value) -> Option<Value> {
     response["choices"][0]["message"].as_object()?;
     Some(response["choices"][0]["message"].clone())

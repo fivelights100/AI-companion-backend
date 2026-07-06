@@ -85,6 +85,43 @@ pub fn get_tools() -> Value {
                     "required": ["keyword"]
                 }
             }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "search_files",
+                "description": "사용자 컴퓨터의 파일/폴더 이름을 Everything CLI로 읽기 전용 검색합니다. 실행, 수정, 삭제, 이동, 복사 같은 작업은 절대 수행하지 않습니다.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": { "type": "string", "description": "찾고 싶은 파일/폴더 이름 핵심 키워드. 필수." },
+                        "root_path": { "type": "string", "description": "검색을 제한할 폴더 경로. 사용자가 명확히 말한 경우에만 사용." },
+                        "extension": { "type": "string", "description": "확장자 필터. 예: pdf, txt, png. 점(.) 없이 작성." },
+                        "kind": { "type": "string", "enum": ["any", "file", "folder"], "description": "파일만 찾으면 file, 폴더만 찾으면 folder, 불명확하면 any." },
+                        "max_results": { "type": "integer", "minimum": 1, "maximum": 50, "description": "최대 결과 개수. 기본 10." },
+                        "match_path": { "type": "boolean", "description": "파일명뿐 아니라 전체 경로에서도 검색어를 찾을지 여부." }
+                    },
+                    "required": ["query"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "prepare_open_file_or_folder",
+                "description": "사용자 컴퓨터에서 Everything 검색으로 파일/폴더 위치를 확인한 뒤, 실제 열기 전 데스크탑 확인 팝업을 준비합니다. 이 도구는 절대 즉시 실행/수정/삭제하지 않습니다.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": { "type": "string", "description": "열고 싶은 파일/폴더 이름 핵심 키워드. 필수." },
+                        "root_path": { "type": "string", "description": "검색을 제한할 폴더 경로. 사용자가 명확히 말한 경우에만 사용." },
+                        "extension": { "type": "string", "description": "열 파일의 확장자. 예: pdf, txt, png, rs. 점(.) 없이 작성. 폴더 열기에는 생략." },
+                        "kind": { "type": "string", "enum": ["any", "file", "folder"], "description": "파일을 열면 file, 폴더를 열면 folder, 불명확하면 any." },
+                        "max_results": { "type": "integer", "minimum": 1, "maximum": 50, "description": "후보 확인용 최대 검색 결과 개수. 서버는 후보 팝업에 7개씩 나누어 표시합니다. 기본 50." }
+                    },
+                    "required": ["query"]
+                }
+            }
         }
     ])
 }

@@ -2,13 +2,16 @@ use chrono::{NaiveDate, NaiveTime};
 use serde_json::{json, Value};
 use sqlx::PgPool;
 
+use crate::models::files::FileOpenCandidatePage;
+
 #[derive(Debug, Default)]
 pub struct ToolExecutionSummary {
     pub schedule_changed: bool,
     pub ledger_changed: bool,
+    pub pending_file_open_candidates: Option<FileOpenCandidatePage>,
 }
 
-pub async fn run_schedule_tool_calls(
+pub async fn run_ai_tool_calls(
     db: &PgPool,
     assistant_message: &Value,
     messages: &mut Vec<Value>,
@@ -54,6 +57,14 @@ pub async fn run_schedule_tool_calls(
                 let result = delete_ledger_entry_from_args(db, &args).await;
                 if result.changed {
                     summary.ledger_changed = true;
+                }
+                result.message
+            }
+            "search_files" => crate::ai::file_search_tools::search_files_from_args(&args).await,
+            "prepare_open_file_or_folder" => {
+                let result = crate::ai::file_open_tools::prepare_open_from_args(&args).await;
+                if result.pending_file_open_candidates.is_some() {
+                    summary.pending_file_open_candidates = result.pending_file_open_candidates;
                 }
                 result.message
             }
