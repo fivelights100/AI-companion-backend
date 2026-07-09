@@ -9,7 +9,7 @@ use std::{
 use tokio::{process::Command, time::{sleep, timeout}};
 
 use crate::{
-    files::security,
+    files::{permission, security},
     models::files::{
         FileSearchKind, FileSearchRequest, FileSearchResponse, FileSearchResult, FileSearchStatus,
     },
@@ -66,6 +66,14 @@ pub async fn get_status() -> FileSearchStatus {
 }
 
 pub async fn search_files(request: FileSearchRequest) -> FileSearchResponse {
+    if let Err(message) = permission::ensure_search_enabled() {
+        return FileSearchResponse { ok: false, message, results: vec![] };
+    }
+    if let Some(extension) = request.extension.as_deref() {
+        if let Err(message) = permission::validate_extension_allowed(Some(extension)) {
+            return FileSearchResponse { ok: false, message, results: vec![] };
+        }
+    }
     if let Some(message) = validate_request(&request) {
         return FileSearchResponse {
             ok: false,
@@ -168,6 +176,7 @@ pub async fn search_files(request: FileSearchRequest) -> FileSearchResponse {
     let results = exported
         .lines()
         .filter_map(parse_result_line)
+        .filter(|result| result.is_folder || permission::is_extension_allowed(result.extension.as_deref()))
         .take(max_results as usize)
         .collect::<Vec<_>>();
 

@@ -123,5 +123,104 @@ pub fn get_tools() -> Value {
                 }
             }
         }
+        ,{
+            "type": "function",
+            "function": {
+                "name": "prepare_rename_file_or_folder",
+                "description": "사용자 컴퓨터에서 Everything 검색으로 파일/폴더 이름 변경 대상 후보를 찾고, 실제 변경 전 데스크탑 후보 선택 및 변경 전/후 확인 팝업을 준비합니다. 이 도구는 절대 즉시 변경하지 않습니다.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": { "type": "string", "description": "이름을 변경할 파일/폴더 이름 핵심 키워드. 필수." },
+                        "new_name": { "type": "string", "description": "변경 후 파일명 또는 폴더명. 경로나 슬래시 없이 이름만 작성. 파일 대상에서 확장자를 생략하면 서버가 기존 확장자를 자동 보존합니다. 필수." },
+                        "root_path": { "type": "string", "description": "검색을 제한할 폴더 경로. 사용자가 명확히 말한 경우에만 사용." },
+                        "extension": { "type": "string", "description": "대상 파일의 확장자. 예: pdf, txt, png, rs. 점(.) 없이 작성. 폴더에는 생략." },
+                        "kind": { "type": "string", "enum": ["any", "file", "folder"], "description": "파일이면 file, 폴더면 folder, 불명확하면 any." },
+                        "max_results": { "type": "integer", "minimum": 1, "maximum": 50, "description": "후보 확인용 최대 검색 결과 개수. 서버는 후보 팝업에 7개씩 나누어 표시합니다. 기본 50." }
+                    },
+                    "required": ["query", "new_name"]
+                }
+            }
+        }
+        ,{
+            "type": "function",
+            "function": {
+                "name": "prepare_edit_file_content",
+                "description": "사용자 컴퓨터에서 Everything 검색으로 텍스트/코드 파일 내용 수정 대상 후보를 찾고, 실제 저장 전 데스크탑 후보 선택 및 변경 전/후 비교 팝업을 준비합니다. 이 도구는 절대 즉시 저장/삭제/실행하지 않습니다. 내용 수정 가능한 파일은 txt, md, json, yaml, yml, js, ts, rs, py, html, css로 제한됩니다.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": { "type": "string", "description": "내용을 수정할 파일 이름 핵심 키워드. 필수." },
+                        "instruction": { "type": "string", "description": "사용자가 원하는 수정 지시 전체. 예: 오늘 할 일 한 줄 추가, debug 값을 true로 변경. 필수." },
+                        "root_path": { "type": "string", "description": "검색을 제한할 폴더 경로. 사용자가 명확히 말한 경우에만 사용." },
+                        "extension": { "type": "string", "description": "대상 파일 확장자. 예: md, txt, json, py. 점(.) 없이 작성." },
+                        "max_results": { "type": "integer", "minimum": 1, "maximum": 50, "description": "후보 확인용 최대 검색 결과 개수. 서버는 후보 팝업에 7개씩 나누어 표시합니다. 기본 50." }
+                    },
+                    "required": ["query", "instruction"]
+                }
+            }
+        }
+
+        ,{
+            "type": "function",
+            "function": {
+                "name": "prepare_create_file_or_folder",
+                "description": "사용자 컴퓨터에서 Everything 검색으로 생성 위치 폴더 후보를 찾고, 실제 생성 전 데스크탑 후보 선택 및 생성 내용 확인 팝업을 준비합니다. 이 도구는 절대 즉시 생성/수정/삭제하지 않습니다. 생성 가능한 파일은 txt, md, json, yaml, yml, js, ts, rs, py, html, css로 제한됩니다.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": { "type": "string", "description": "생성 위치로 사용할 폴더 이름 또는 위치 키워드. 예: 바탕화면, 다운로드, 문서, 프로젝트 폴더. 필수." },
+                        "name": { "type": "string", "description": "생성할 파일명 또는 폴더명. 경로나 슬래시 없이 이름만 작성. 파일 생성 시 확장자를 반드시 포함. 필수." },
+                        "kind": { "type": "string", "enum": ["file", "folder"], "description": "파일 생성이면 file, 폴더 생성이면 folder." },
+                        "content": { "type": "string", "description": "파일 생성 시 넣을 텍스트 내용. 폴더 생성에는 비움. 파일 내용은 2MB 이하." },
+                        "root_path": { "type": "string", "description": "검색을 제한할 폴더 경로. 사용자가 명확히 말한 경우에만 사용." },
+                        "max_results": { "type": "integer", "minimum": 1, "maximum": 50, "description": "후보 확인용 최대 검색 결과 개수. 서버는 후보 팝업에 7개씩 나누어 표시합니다. 기본 50." }
+                    },
+                    "required": ["query", "name", "kind"]
+                }
+            }
+        }
+        ,{
+            "type": "function",
+            "function": {
+                "name": "prepare_delete_file_or_folder",
+                "description": "사용자 컴퓨터에서 Everything 검색으로 삭제 대상 파일/폴더 후보를 찾고, 실제 삭제 전 데스크탑 후보 선택 및 휴지통 이동 확인 팝업을 준비합니다. 이 도구는 절대 즉시 삭제하지 않습니다. 삭제는 영구 삭제가 아니라 휴지통 이동으로만 수행됩니다.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": { "type": "string", "description": "삭제할 파일/폴더 이름 핵심 키워드. 필수." },
+                        "root_path": { "type": "string", "description": "검색을 제한할 폴더 경로. 사용자가 명확히 말한 경우에만 사용." },
+                        "extension": { "type": "string", "description": "대상 파일의 확장자. 예: txt, md, png. 점(.) 없이 작성. 폴더에는 생략." },
+                        "kind": { "type": "string", "enum": ["any", "file", "folder"], "description": "파일이면 file, 폴더면 folder, 불명확하면 any." },
+                        "max_results": { "type": "integer", "minimum": 1, "maximum": 50, "description": "후보 확인용 최대 검색 결과 개수. 서버는 후보 팝업에 7개씩 나누어 표시합니다. 기본 50." }
+                    },
+                    "required": ["query"]
+                }
+            }
+        }
+        ,{
+            "type": "function",
+            "function": {
+                "name": "prepare_transfer_file_or_folder",
+                "description": "사용자 컴퓨터에서 Everything 검색으로 복사/이동할 원본과 목적지 폴더 후보를 찾고, 실제 복사/이동 전 데스크탑 후보 선택 및 확인 팝업을 준비합니다. 이 도구는 절대 즉시 복사/이동하지 않습니다. 이동은 현재 같은 드라이브 안에서만 허용됩니다.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "operation": { "type": "string", "enum": ["copy", "move"], "description": "복사 요청이면 copy, 이동/옮기기 요청이면 move." },
+                        "source_query": { "type": "string", "description": "복사/이동할 파일 또는 폴더 이름 핵심 키워드. 필수." },
+                        "destination_query": { "type": "string", "description": "목적지 폴더 이름 또는 위치 키워드. 예: 바탕화면, 다운로드, 문서, 프로젝트 폴더. 필수." },
+                        "root_path": { "type": "string", "description": "원본/목적지 검색을 제한할 폴더 경로. 사용자가 명확히 말한 경우에만 사용." },
+                        "extension": { "type": "string", "description": "원본 파일 확장자. 예: txt, md, png. 점(.) 없이 작성. 폴더에는 생략." },
+                        "kind": { "type": "string", "enum": ["any", "file", "folder"], "description": "원본이 파일이면 file, 폴더면 folder, 불명확하면 any." },
+                        "max_results": { "type": "integer", "minimum": 1, "maximum": 50, "description": "후보 확인용 최대 검색 결과 개수. 서버는 후보 팝업에 7개씩 나누어 표시합니다. 기본 50." }
+                    },
+                    "required": ["operation", "source_query", "destination_query"]
+                }
+            }
+        }
+
+
+
+
     ])
 }

@@ -1,0 +1,101 @@
+{
+  "enabled": true,
+  "terms": {
+    "show_terms_modal": true,
+    "accepted": true,
+    "accepted_at": "2026-07-09T08:56:47.408955900+00:00"
+  },
+  "permissions": {
+    "search": true,
+    "modify": false,
+    "delete": false
+  },
+  "safety": {
+    "fixed_blocked_paths": [
+      "C:\\Windows"
+    ],
+    "user_blocked_paths": [],
+    "allowed_extensions": [
+      "txt"
+    ],
+    "extension_groups": [
+      {
+        "id": "executable",
+        "label": "실행",
+        "extensions": [
+          "exe",
+          "msi",
+          "bat",
+          "cmd",
+          "ps1",
+          "vbs",
+          "scr",
+          "lnk",
+          "dll",
+          "sys",
+          "reg"
+        ],
+        "locked": false,
+        "description": "사용자가 직접 허용 여부를 선택합니다."
+      },
+      {
+        "id": "text",
+        "label": "텍스트",
+        "extensions": [
+          "txt",
+          "md",
+          "json",
+          "yaml",
+          "yml",
+          "js",
+          "ts",
+          "rs",
+          "py",
+          "html",
+          "css"
+        ],
+        "locked": false,
+        "description": "텍스트/코드 파일"
+      },
+      {
+        "id": "archive",
+        "label": "압축",
+        "extensions": [
+          "zip"
+        ],
+        "locked": false,
+        "description": "압축 파일"
+      },
+      {
+        "id": "audio",
+        "label": "소리",
+        "extensions": [
+          "mp3"
+        ],
+        "locked": false,
+        "description": "오디오 파일"
+      },
+      {
+        "id": "video",
+        "label": "영상",
+        "extensions": [
+          "mp4"
+        ],
+        "locked": false,
+        "description": "비디오 파일"
+      },
+      {
+        "id": "image",
+        "label": "사진",
+        "extensions": [
+          "png",
+          "jpg",
+          "jpeg",
+          "gif"
+        ],
+        "locked": false,
+        "description": "이미지 파일"
+      }
+    ]
+  }
+}

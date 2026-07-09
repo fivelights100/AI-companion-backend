@@ -10,6 +10,26 @@ pub fn build_tts_text(reply: &str, intent: &Intent) -> String {
             reply,
             "파일이나 폴더 열기 요청을 확인했어. 화면의 안내를 보고 필요한 대상을 더 구체적으로 말해줘.",
         ),
+        Intent::FileRename => sanitize_for_file_context(
+            reply,
+            "파일이나 폴더 이름 변경 요청을 확인했어. 화면의 안내를 보고 진행해줘.",
+        ),
+        Intent::FileCreate => sanitize_for_file_context(
+            reply,
+            "파일이나 폴더 생성 요청을 확인했어. 화면의 안내를 보고 진행해줘.",
+        ),
+        Intent::FileContentEdit => sanitize_for_file_context(
+            reply,
+            "파일 내용 수정 요청을 확인했어. 화면의 안내를 보고 진행해줘.",
+        ),
+        Intent::FileDelete => sanitize_for_file_context(
+            reply,
+            "파일이나 폴더 삭제 요청을 확인했어. 화면의 안내를 보고 진행해줘.",
+        ),
+        Intent::FileTransfer => sanitize_for_file_context(
+            reply,
+            "파일이나 폴더 복사/이동 요청을 확인했어. 화면의 안내를 보고 진행해줘.",
+        ),
         _ => reply.to_string(),
     }
 }
@@ -29,6 +49,7 @@ fn looks_like_file_or_path_heavy_reply(reply: &str) -> bool {
         ".pdf", ".txt", ".md", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
         ".png", ".jpg", ".jpeg", ".gif", ".mp3", ".mp4", ".zip", ".js", ".ts",
         ".rs", ".py", ".json", ".yaml", ".yml", ".html", ".css",
+        ".exe", ".msi", ".bat", ".cmd", ".ps1", ".vbs", ".scr", ".lnk", ".dll", ".sys", ".reg",
     ];
 
     let path_hits = path_markers.iter().filter(|marker| lower.contains(*marker)).count();

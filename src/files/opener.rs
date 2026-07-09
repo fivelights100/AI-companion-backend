@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{
-    files::{candidates, everything, security},
+    files::{candidates, everything, permission, security},
     models::files::{
         FileOpenCandidate, FileOpenConfirmRequest, FileOpenConfirmResponse, FileOpenKind,
         FileOpenNextRequest, FileOpenPrepareRequest, FileOpenPrepareResponse, FileSearchKind,
@@ -15,6 +15,9 @@ use crate::{
 const OPEN_SEARCH_MAX_RESULTS: u8 = 50;
 
 pub async fn prepare_open_target(request: FileOpenPrepareRequest) -> FileOpenPrepareResponse {
+    if let Err(message) = permission::ensure_search_enabled() {
+        return rejected_response("permission_denied", message);
+    }
     if let Some(message) = validate_prepare_request(&request) {
         return rejected_response("rejected", message);
     }
@@ -67,6 +70,9 @@ pub async fn prepare_open_target(request: FileOpenPrepareRequest) -> FileOpenPre
 }
 
 pub async fn next_open_candidates(request: FileOpenNextRequest) -> FileOpenPrepareResponse {
+    if let Err(message) = permission::ensure_search_enabled() {
+        return rejected_response("permission_denied", message);
+    }
     match candidates::next_page(&request.request_id, request.offset.unwrap_or(0)).await {
         Ok(page) => candidates::candidates_response_from_page(page),
         Err(message) => rejected_response("not_found", message),
@@ -74,6 +80,9 @@ pub async fn next_open_candidates(request: FileOpenNextRequest) -> FileOpenPrepa
 }
 
 pub async fn confirm_open_target(request: FileOpenConfirmRequest) -> FileOpenConfirmResponse {
+    if let Err(message) = permission::ensure_search_enabled() {
+        return FileOpenConfirmResponse { ok: false, message };
+    }
     let candidate_id = request.candidate_id.trim();
 
     if candidate_id.is_empty() {
@@ -145,6 +154,7 @@ fn build_openable_candidate(result: &FileSearchResult) -> Result<FileOpenCandida
         if !path.exists() || !path.is_dir() {
             return Err("폴더가 존재하지 않습니다.".to_string());
         }
+        permission::validate_path_allowed_by_user_blacklist(path)?;
 
         return Ok(FileOpenCandidate {
             id: String::new(),
@@ -172,6 +182,7 @@ fn build_openable_candidate(result: &FileSearchResult) -> Result<FileOpenCandida
     if !security::is_allowed_open_extension(&extension) {
         return Err(format!("허용되지 않은 파일 확장자입니다: .{extension}"));
     }
+    permission::validate_extension_allowed(Some(&extension))?;
 
     Ok(FileOpenCandidate {
         id: String::new(),
@@ -192,6 +203,7 @@ fn revalidate_candidate(candidate: &FileOpenCandidate) -> Result<(), String> {
 
     if candidate.is_folder {
         if path.exists() && path.is_dir() {
+            permission::validate_path_allowed_by_user_blacklist(path)?;
             return Ok(());
         }
         return Err("폴더가 더 이상 존재하지 않거나 폴더가 아닙니다.".to_string());
@@ -209,6 +221,8 @@ fn revalidate_candidate(candidate: &FileOpenCandidate) -> Result<(), String> {
     if !security::is_allowed_open_extension(&extension) {
         return Err(format!("현재 안전 정책상 .{extension} 파일은 열 수 없습니다."));
     }
+    permission::validate_extension_allowed(Some(&extension))?;
+    permission::validate_path_allowed_by_user_blacklist(path)?;
 
     Ok(())
 }

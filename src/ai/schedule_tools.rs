@@ -2,13 +2,18 @@ use chrono::{NaiveDate, NaiveTime};
 use serde_json::{json, Value};
 use sqlx::PgPool;
 
-use crate::models::files::FileOpenCandidatePage;
+use crate::models::files::{FileContentEditCandidatePage, FileCreateCandidatePage, FileDeleteCandidatePage, FileOpenCandidatePage, FileRenameCandidatePage, FileTransferPending};
 
 #[derive(Debug, Default)]
 pub struct ToolExecutionSummary {
     pub schedule_changed: bool,
     pub ledger_changed: bool,
     pub pending_file_open_candidates: Option<FileOpenCandidatePage>,
+    pub pending_file_rename_candidates: Option<FileRenameCandidatePage>,
+    pub pending_file_create_candidates: Option<FileCreateCandidatePage>,
+    pub pending_file_content_edit_candidates: Option<FileContentEditCandidatePage>,
+    pub pending_file_delete_candidates: Option<FileDeleteCandidatePage>,
+    pub pending_file_transfer_candidates: Option<FileTransferPending>,
 }
 
 pub async fn run_ai_tool_calls(
@@ -68,6 +73,41 @@ pub async fn run_ai_tool_calls(
                 }
                 result.message
             }
+            "prepare_rename_file_or_folder" => {
+                let result = crate::ai::file_rename_tools::prepare_rename_from_args(&args).await;
+                if result.pending_file_rename_candidates.is_some() {
+                    summary.pending_file_rename_candidates = result.pending_file_rename_candidates;
+                }
+                result.message
+            }
+            "prepare_edit_file_content" => {
+                let result = crate::ai::file_content_edit_tools::prepare_content_edit_from_args(&args).await;
+                if result.pending_file_content_edit_candidates.is_some() {
+                    summary.pending_file_content_edit_candidates = result.pending_file_content_edit_candidates;
+                }
+                result.message
+            }
+            "prepare_create_file_or_folder" => {
+                let result = crate::ai::file_create_tools::prepare_create_from_args(&args).await;
+                if result.pending_file_create_candidates.is_some() {
+                    summary.pending_file_create_candidates = result.pending_file_create_candidates;
+                }
+                result.message
+            }
+            "prepare_delete_file_or_folder" => {
+                let result = crate::ai::file_delete_tools::prepare_delete_from_args(&args).await;
+                if result.pending_file_delete_candidates.is_some() {
+                    summary.pending_file_delete_candidates = result.pending_file_delete_candidates;
+                }
+                result.message
+            },
+            "prepare_transfer_file_or_folder" => {
+                let result = crate::ai::file_transfer_tools::prepare_transfer_from_args(&args).await;
+                if result.pending_file_transfer_candidates.is_some() {
+                    summary.pending_file_transfer_candidates = result.pending_file_transfer_candidates;
+                }
+                result.message
+            },
             other => format!("시스템 거절: 알 수 없는 도구입니다: {other}"),
         };
 

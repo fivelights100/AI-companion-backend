@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::models::files::{FileOpenCandidate, FileOpenCandidatePage};
+use crate::models::files::{FileContentEditCandidatePage, FileCreateCandidatePage, FileDeleteCandidatePage, FileOpenCandidate, FileOpenCandidatePage, FileRenameCandidatePage, FileTransferPending};
 
 #[derive(Debug, Deserialize)]
 pub struct ChatMessage {
@@ -24,6 +24,16 @@ pub struct ChatResponse {
     pub pending_file_open: Option<FileOpenCandidate>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pending_file_open_candidates: Option<FileOpenCandidatePage>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pending_file_rename_candidates: Option<FileRenameCandidatePage>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pending_file_create_candidates: Option<FileCreateCandidatePage>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pending_file_content_edit_candidates: Option<FileContentEditCandidatePage>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pending_file_delete_candidates: Option<FileDeleteCandidatePage>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pending_file_transfer_candidates: Option<FileTransferPending>,
 }
 
 impl ChatResponse {
@@ -35,6 +45,11 @@ impl ChatResponse {
             ledger_updated: false,
             pending_file_open: None,
             pending_file_open_candidates: None,
+            pending_file_rename_candidates: None,
+            pending_file_create_candidates: None,
+            pending_file_content_edit_candidates: None,
+            pending_file_delete_candidates: None,
+            pending_file_transfer_candidates: None,
         }
     }
 }
